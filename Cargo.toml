@@ -11,3 +11,11 @@ bsdiff = "0.1.6"
 liblzma = {version="0.3.0", features=["static"]}
 qbsdiff = "1.4.1"
 tar = "0.4.40"
+
+
+#Benchmarks
+criterion = { version = "0.5.1", features = ["html_reports"] }
+
+
+[[bench]]
+name="compressed"
