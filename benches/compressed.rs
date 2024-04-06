@@ -7,6 +7,7 @@ use test::Bencher;
 
 use liblzma::{decode_all, encode_all};
 
+use patchpack;
 
 
 

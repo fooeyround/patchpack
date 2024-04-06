@@ -392,6 +392,7 @@ dependencies = [
  "criterion",
  "liblzma",
  "qbsdiff",
+ "rayon",
  "tar",
 ]
 
