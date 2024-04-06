@@ -1,5 +1,7 @@
+use qbsdiff::bsdiff;
 use rayon::prelude::*;
-use std::io;
+use std::ffi::OsStr;
+use std::{fs, io};
 use std::path::PathBuf;
 use std::{io::prelude::*, path::Path};
 use std::fs::File;
@@ -29,34 +31,52 @@ impl RelativeBSPatch {
 
 
 
-pub fn apply_patch(patch: &[u8], dest: &str) -> std::io::Result<()> {
+///Given a patch and a destination, it will automatically patch relative to that target
+/// If the patch contains a `libs/engine.so.bspatch`, and dest is `app`, `app/libs/engine.so` will be patched. 
+pub fn apply_patch(patch: &[u8], dest: PathBuf) -> std::io::Result<Vec<isize>> {
 
     //Uncompress
 
-    let uncompressed_patch = decode_all(patch)?;
-
-        
+    let file_patches = decode_patch(patch)?;
 
 
-    let mut archive = Archive::new(&uncompressed_patch[..]);
+    let counts: Vec<isize> = file_patches.par_iter().filter_map(|fp| {
 
 
-    //Unpack into memory
+        let mut rel_path = dest.join(&fp.path);
+
+        println!("{:?}", rel_path.file_name().unwrap_or(OsStr::new("ThisIsABrokenFile_ReportThisAsABug")));
+
+        fs::create_dir_all(&rel_path).ok()?;
+
+        let mut file = fs::OpenOptions::new()
+        .read(true)
+        .write(true) // <--------- this
+        .create(true)
+        .open(&rel_path).ok()?;
 
 
-    let file_bspatches: Vec<tar::Entry<&[u8]>> =  archive.entries()?
-        .filter_map(|p| p.ok()).collect();
+        let mut original = Vec::new();
+
+        file.read_to_end(&mut original).ok()?;
+
+
+        let patch_applicator = qbsdiff::Bspatch::new(&fp.content).ok()?;
+
+        patch_applicator.apply(&original, &file).ok()?;
+
+        Some(file.bytes().count() as isize - original.len() as isize)
+
+    }).collect();
 
 
 
-    //Apply Said patches
-
-    Ok(())
+    Ok(counts)
 
 }
 
 
-
+/// Takes a patch's file contents as is.
 pub fn decode_patch(patch: &[u8]) -> std::io::Result<Vec<RelativeBSPatch>> {
     let uncompressed_patch = decode_all(patch)?;
 
@@ -75,10 +95,8 @@ pub fn decode_patch(patch: &[u8]) -> std::io::Result<Vec<RelativeBSPatch>> {
    
 }
 
-
-
+//returns the file contents that should be written to the file directly, this function *almost* an inverse to the one above.
 pub fn encode_patch(files: Vec<RelativeBSPatch>) -> std::io::Result<Vec<u8>> {
-
 
 
     let mut patch = Vec::new();
@@ -101,4 +119,27 @@ pub fn encode_patch(files: Vec<RelativeBSPatch>) -> std::io::Result<Vec<u8>> {
     
     encode_all(&data[..], 9)
 
+}
+
+
+
+
+
+#[cfg(test)]
+mod test {
+
+
+
+    #[test]
+    fn patch_apply() {
+
+    }
+
+    #[test]
+    fn patch_create() {
+        
+    }
+
+
+    
 }
