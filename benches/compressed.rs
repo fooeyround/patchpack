@@ -9,22 +9,10 @@ use liblzma::{decode_all, encode_all};
 
 use patchpack;
 
-
-
-
-
-
 fn compress_bench(x: &[u8], b: &mut Bencher) {
-    b.iter(|| {
-        encode_all(x, 9).unwrap()
-    });
+    b.iter(|| encode_all(x, 9).unwrap());
 }
 
 fn decompress_bench(x: &[u8], b: &mut Bencher) {
-    b.iter(|| {
-        decode_all(x).unwrap()
-    });
+    b.iter(|| decode_all(x).unwrap());
 }
-
-
-
