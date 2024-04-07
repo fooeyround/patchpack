@@ -177,13 +177,32 @@ pub fn encode_patch(files: Vec<RelativeBSPatch>) -> std::io::Result<Vec<u8>> {
 #[cfg(test)]
 mod test {
 
+
+
+    #[test]
+    fn patch_build() {
+
+    }
+    
+
+    #[test]
+    fn patch_create() {
+
+    }
+
+
+    #[test]///This is less of a test, but a fake "network"
+    fn patch_send() {
+
+    }
+
+
     #[test]
     fn patch_apply() {
 
     }
+    
+    
 
-    #[test]
-    fn patch_create() {
-        
-    }
+
 }
